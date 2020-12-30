@@ -5,7 +5,7 @@ use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
 
-fn main() {
+fn main() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
 
     match args.len() {
@@ -27,10 +27,12 @@ fn main() {
         2 => {
             let file = &args[1];
             let content = fs::read_to_string(file).expect("Can't open script file.");
-            lox::run(content);
+            lox::run(content)?;
         }
         _ => {
             println!("Usage: lox-rust [script]")
         }
     }
+
+    Ok(())
 }

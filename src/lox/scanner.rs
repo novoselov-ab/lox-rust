@@ -1,66 +1,77 @@
+#[allow(dead_code)]
+#[derive(Debug)]
 pub enum TokenType {
     // Single-character tokens.
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-    COMMA,
-    DOT,
-    MINUS,
-    PLUS,
-    SEMICOLON,
-    SLASH,
-    STAR,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Comma,
+    Dot,
+    Minus,
+    Plus,
+    Semicolon,
+    Slash,
+    Star,
 
     // One or two character tokens.
-    BANG,
-    BANG_EQUAL,
-    EQUAL,
-    EQUAL_EQUAL,
-    GREATER,
-    GREATER_EQUAL,
-    LESS,
-    LESS_EQUAL,
+    Bang,
+    BangEqual,
+    Equal,
+    EqualEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
 
     // Literals.
-    IDENTIFIER,
-    STRING,
-    NUMBER,
+    Identifier,
+    String,
+    Number,
 
     // Keywords.
-    AND,
-    CLASS,
-    ELSE,
-    FALSE,
-    FUN,
-    FOR,
-    IF,
-    NIL,
-    OR,
-    PRINT,
-    RETURN,
-    SUPER,
-    THIS,
-    TRUE,
-    VAR,
-    WHILE,
+    And,
+    Class,
+    Else,
+    False,
+    Fun,
+    For,
+    If,
+    Nil,
+    Or,
+    Print,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
+    While,
 }
 
 #[derive(Debug)]
 pub struct Token {
-    //pub type: TokenType,
-
+    pub type_: TokenType,
+    pub lexeme: String,
+    pub literal: String,
+    pub line: usize,
 }
 
 pub struct Scanner<'a> {
     pub source: &'a str,
     pub pos: usize,
+    pub tokens: Vec<Token>,
 }
 
 impl Scanner<'_> {
-    pub fn scan_tokens(self: &mut Self) -> Vec<Token> {
-        let mut tokens = Vec::new();
+    pub fn new(source: &str) -> Scanner {
+        Scanner {
+            source: source,
+            pos: 0,
+            tokens: Vec::new(),
+        }
+    }
 
-        tokens
+    pub fn scan_tokens(self: &mut Self) -> &Vec<Token> {
+        &self.tokens
     }
 }
