@@ -5,10 +5,12 @@ use scanner::Scanner;
 
 pub fn run(source: String) -> Result<(), String> {
     let mut s = Scanner::new(source);
-
-    let tokens = s.scan_tokens();
-    //println!("running {}", source);
-    println!("tokens {:?}", tokens);
+    match s.scan_tokens() {
+        Ok(tokens) => {
+            println!("tokens: {:?}", tokens);
+        }
+        Err(e) => return Err(e.to_string()),
+    }
 
     Ok(())
 }

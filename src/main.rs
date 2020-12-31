@@ -22,7 +22,9 @@ fn main() -> Result<(), String> {
                 break;
             }
 
-            lox::run(s);
+            if let Err(e) = lox::run(s) {
+                println!("{}", e);
+            }
         },
         2 => {
             let file = &args[1];

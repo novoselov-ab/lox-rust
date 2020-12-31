@@ -1,8 +1,9 @@
 use errors::CompileErrorType::*;
 use errors::{CompileError, CompileErrorType};
+use std::collections::HashMap;
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenType {
     // Single-character tokens.
     LeftParen,
@@ -29,8 +30,8 @@ pub enum TokenType {
 
     // Literals.
     Identifier,
-    Str,
-    Number,
+    Str(String),
+    Number(f64),
 
     // Keywords.
     And,
@@ -70,16 +71,37 @@ pub struct Scanner {
     pub current: usize,
     pub line: usize,
     pub tokens: Vec<Token>,
+    keywords: HashMap<&'static str, TokenType>,
 }
 
 impl Scanner {
     pub fn new(source: String) -> Scanner {
+        let mut keywords = HashMap::new();
+
+        keywords.insert("and", And);
+        keywords.insert("class", Class);
+        keywords.insert("else", Else);
+        keywords.insert("false", False);
+        keywords.insert("for", For);
+        keywords.insert("fun", Fun);
+        keywords.insert("if", If);
+        keywords.insert("nil", Nil);
+        keywords.insert("or", Or);
+        keywords.insert("print", Print);
+        keywords.insert("return", Return);
+        keywords.insert("super", Super);
+        keywords.insert("this", This);
+        keywords.insert("true", True);
+        keywords.insert("var", Var);
+        keywords.insert("while", While);
+
         Scanner {
             source: source,
             start: 0,
             current: 0,
             line: 1,
             tokens: Vec::new(),
+            keywords: keywords,
         }
     }
 
@@ -148,6 +170,12 @@ impl Scanner {
             '"' => {
                 self.scan_string()?;
             }
+            '0'..='9' => {
+                self.scan_number();
+            }
+            'a'..='z' | 'A'..='Z' | '_' => {
+                self.scan_identifier();
+            }
             _ => {
                 return self.build_error(UnexpectedChar(c), "");
             }
@@ -193,6 +221,13 @@ impl Scanner {
         self.source.chars().nth(self.current).unwrap()
     }
 
+    fn peek_next(self: &mut Self) -> char {
+        if self.current + 1 >= self.source.len() {
+            return '\0';
+        }
+        self.source.chars().nth(self.current + 1).unwrap()
+    }
+
     fn scan_string(self: &mut Self) -> Result<(), CompileError> {
         while self.peek() != '"' && !self.is_at_end() {
             if self.peek() == '\n' {
@@ -208,13 +243,46 @@ impl Scanner {
         // close "
         self.advance();
 
-        self.tokens.push(Token {
-            ttype: Str,
-            lexeme: self.source[self.start + 1..self.current - 1].to_string(),
-            line: self.line,
-        });
+        self.add_token(Str(
+            self.source[self.start + 1..self.current - 1].to_string()
+        ));
 
         Ok(())
+    }
+
+    fn scan_number(self: &mut Self) {
+        while self.peek().is_ascii_digit() {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
+            self.advance();
+
+            while self.peek().is_ascii_digit() {
+                self.advance();
+            }
+        }
+
+        self.add_token(Number(
+            self.source[self.start..self.current]
+                .parse::<f64>()
+                .unwrap(),
+        ));
+    }
+
+    fn scan_identifier(self: &mut Self) {
+        loop  {
+            let c = self.peek();
+            if !c.is_alphanumeric() && c != '_' {
+                break;
+            }
+            self.advance();
+        }
+
+        let value = &self.source[self.start..self.current];
+
+        let ttype = self.keywords.get(value).unwrap_or(&Identifier).clone();
+        self.add_token(ttype);
     }
 
     fn add_token(self: &mut Self, ttype: TokenType) {
@@ -233,7 +301,7 @@ mod tests {
     fn scan_types(msg: &str) -> Vec<TokenType> {
         let mut s = Scanner::new(msg.to_string());
         let tokens = s.scan_tokens().unwrap();
-        tokens.iter().map(|t| t.ttype).collect()
+        tokens.iter().map(|t| t.ttype.clone()).collect()
     }
 
     fn scan_error(msg: &str) -> CompileError {
@@ -250,13 +318,17 @@ mod tests {
         assert_eq!(scan_types("(//==\n=="), vec![LeftParen, EqualEqual, Eof]);
         assert_eq!(
             scan_types("(\"!===\")"),
-            vec![LeftParen, Str, RightParen, Eof]
+            vec![LeftParen, Str("!===".to_string()), RightParen, Eof]
         );
+        assert_eq!(
+            scan_types("(123450.6789"),
+            vec![LeftParen, Number(123450.6789f64), Eof]
+        );
+        assert_eq!(scan_types("else or lol"), vec![Else, Or, Identifier, Eof]);
     }
 
     #[test]
     fn unexpected_char_error() {
-        let err = scan_error("((~");
         assert_eq!(
             scan_error("\n((\n(~"),
             CompileError {
