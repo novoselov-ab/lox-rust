@@ -1,6 +1,5 @@
 mod lox;
 
-
 use std::env;
 use std::fs;
 use std::io::{stdin, stdout, Write};
@@ -14,9 +13,7 @@ fn main() -> Result<(), String> {
             let _ = stdout().flush();
 
             let mut s = String::new();
-            stdin()
-                .read_line(&mut s)
-                .expect("String is incorrect.");
+            stdin().read_line(&mut s).expect("String is incorrect.");
 
             if s.trim() == "exit" {
                 break;

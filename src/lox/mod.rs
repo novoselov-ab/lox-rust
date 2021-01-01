@@ -1,10 +1,13 @@
 mod errors;
 mod scanner;
+mod tokens;
+mod ast;
+mod astprinter;
 
 use scanner::Scanner;
 
 pub fn run(source: String) -> Result<(), String> {
-    let mut s = Scanner::new(source);
+    let mut s = Scanner::new(&source);
     match s.scan_tokens() {
         Ok(tokens) => {
             println!("tokens: {:?}", tokens);

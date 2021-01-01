@@ -1,81 +1,22 @@
+use super::errors;
+use super::tokens::*;
 use errors::CompileErrorType::*;
 use errors::{CompileError, CompileErrorType};
 use std::collections::HashMap;
 
-#[allow(dead_code)]
-#[derive(Debug, PartialEq, Clone)]
-pub enum TokenType {
-    // Single-character tokens.
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    Comma,
-    Dot,
-    Minus,
-    Plus,
-    Semicolon,
-    Slash,
-    Star,
-
-    // One or two character tokens.
-    Bang,
-    BangEqual,
-    Equal,
-    EqualEqual,
-    Greater,
-    GreaterEqual,
-    Less,
-    LessEqual,
-
-    // Literals.
-    Identifier,
-    Str(String),
-    Number(f64),
-
-    // Keywords.
-    And,
-    Class,
-    Else,
-    False,
-    Fun,
-    For,
-    If,
-    Nil,
-    Or,
-    Print,
-    Return,
-    Super,
-    This,
-    True,
-    Var,
-    While,
-
-    Eof,
-}
-
 use TokenType::*;
 
-use super::errors;
-
-#[derive(Debug)]
-pub struct Token {
-    pub ttype: TokenType,
-    pub lexeme: String,
-    pub line: usize,
-}
-
-pub struct Scanner {
-    pub source: String,
+pub struct Scanner<'a> {
+    pub source: &'a str,
     pub start: usize,
     pub current: usize,
     pub line: usize,
-    pub tokens: Vec<Token>,
+    pub tokens: Vec<Token<'a>>,
     keywords: HashMap<&'static str, TokenType>,
 }
 
-impl Scanner {
-    pub fn new(source: String) -> Scanner {
+impl<'a> Scanner<'a> {
+    pub fn new(source: &'a str) -> Self {
         let mut keywords = HashMap::new();
 
         keywords.insert("and", And);
@@ -113,7 +54,7 @@ impl Scanner {
 
         self.tokens.push(Token {
             ttype: Eof,
-            lexeme: "".to_string(),
+            lexeme: "",
             line: self.line,
         });
 
@@ -271,7 +212,7 @@ impl Scanner {
     }
 
     fn scan_identifier(self: &mut Self) {
-        loop  {
+        loop {
             let c = self.peek();
             if !c.is_alphanumeric() && c != '_' {
                 break;
@@ -288,7 +229,7 @@ impl Scanner {
     fn add_token(self: &mut Self, ttype: TokenType) {
         self.tokens.push(Token {
             ttype: ttype,
-            lexeme: self.source[self.start..self.current].to_string(),
+            lexeme: &self.source[self.start..self.current],
             line: self.line,
         });
     }
@@ -299,13 +240,13 @@ mod tests {
     use super::*;
 
     fn scan_types(msg: &str) -> Vec<TokenType> {
-        let mut s = Scanner::new(msg.to_string());
+        let mut s = Scanner::new(msg);
         let tokens = s.scan_tokens().unwrap();
         tokens.iter().map(|t| t.ttype.clone()).collect()
     }
 
     fn scan_error(msg: &str) -> CompileError {
-        let mut s = Scanner::new(msg.to_string());
+        let mut s = Scanner::new(msg);
         s.scan_tokens().err().unwrap()
     }
 
