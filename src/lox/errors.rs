@@ -4,6 +4,7 @@ use std::{error, fmt};
 pub enum CompileErrorType {
     UnexpectedChar(char),
     UnterminatedString,
+    InvalidSyntax
 }
 
 #[derive(Debug, PartialEq)]

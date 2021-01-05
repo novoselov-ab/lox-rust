@@ -1,5 +1,6 @@
 mod errors;
 mod scanner;
+mod parser;
 mod tokens;
 mod ast;
 mod astprinter;

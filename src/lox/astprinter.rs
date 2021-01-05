@@ -1,15 +1,16 @@
 use super::ast::*;
 use super::tokens::*;
-use Expr::*;
 
-fn dump_ast(expr: &Expr) -> String {
+
+#[allow(dead_code)]
+pub fn dump_ast(expr: &Expr) -> String {
     return match expr {
         Expr::Identifier(t) => {
             format!("{}", t.lexeme)
         }
         Expr::Literal(t) => match t.ttype {
-            TokenType::Str(ref s) => format!("{}", s),
-            TokenType::Number(n) => format!("{}", n),
+            TokenType::Str => format!("{}", t.literal.as_ref().unwrap()),
+            TokenType::Number => format!("{}", t.literal.as_ref().unwrap()),
             TokenType::Identifier => format!("{}", t.lexeme),
             _ => panic!("unexpected token type"),
         },
@@ -32,15 +33,18 @@ mod tests {
     #[test]
     fn basic() {
         use TokenType::*;
+        use Expr;
 
-        let e = Unary(
+        let e = Expr::Unary(
             Token {
                 ttype: Bang,
                 lexeme: "!",
+                literal: None,
                 line: 1,
             },
             Box::new(Expr::Literal(Token {
-                ttype: Number(0.),
+                ttype: Number,
+                literal: Some(Literal::Number(0.)),
                 lexeme: "0.",
                 line: 1,
             })),

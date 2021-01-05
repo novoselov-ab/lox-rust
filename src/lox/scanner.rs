@@ -55,6 +55,7 @@ impl<'a> Scanner<'a> {
         self.tokens.push(Token {
             ttype: Eof,
             lexeme: "",
+            literal: None,
             line: self.line,
         });
 
@@ -184,9 +185,9 @@ impl<'a> Scanner<'a> {
         // close "
         self.advance();
 
-        self.add_token(Str(
+        self.add_token_with_literal(Str, Some(Literal::Str(
             self.source[self.start + 1..self.current - 1].to_string()
-        ));
+        )));
 
         Ok(())
     }
@@ -204,11 +205,11 @@ impl<'a> Scanner<'a> {
             }
         }
 
-        self.add_token(Number(
+        self.add_token_with_literal(Number, Some(Literal::Number(
             self.source[self.start..self.current]
                 .parse::<f64>()
                 .unwrap(),
-        ));
+        )));
     }
 
     fn scan_identifier(self: &mut Self) {
@@ -227,9 +228,14 @@ impl<'a> Scanner<'a> {
     }
 
     fn add_token(self: &mut Self, ttype: TokenType) {
+        self.add_token_with_literal(ttype, None)
+    }
+
+    fn add_token_with_literal(self: &mut Self, ttype: TokenType, literal: Option<Literal>) {
         self.tokens.push(Token {
             ttype: ttype,
             lexeme: &self.source[self.start..self.current],
+            literal,
             line: self.line,
         });
     }
@@ -259,11 +265,11 @@ mod tests {
         assert_eq!(scan_types("(//==\n=="), vec![LeftParen, EqualEqual, Eof]);
         assert_eq!(
             scan_types("(\"!===\")"),
-            vec![LeftParen, Str("!===".to_string()), RightParen, Eof]
+            vec![LeftParen, Str, RightParen, Eof]
         );
         assert_eq!(
             scan_types("(123450.6789"),
-            vec![LeftParen, Number(123450.6789f64), Eof]
+            vec![LeftParen, Number, Eof]
         );
         assert_eq!(scan_types("else or lol"), vec![Else, Or, Identifier, Eof]);
     }
