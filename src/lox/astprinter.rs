@@ -1,7 +1,6 @@
 use super::ast::*;
 use super::tokens::*;
 
-
 #[allow(dead_code)]
 pub fn dump_ast(expr: &Expr) -> String {
     return match expr {
@@ -11,8 +10,7 @@ pub fn dump_ast(expr: &Expr) -> String {
         Expr::Literal(t) => match t.ttype {
             TokenType::Str => format!("{}", t.literal.as_ref().unwrap()),
             TokenType::Number => format!("{}", t.literal.as_ref().unwrap()),
-            TokenType::Identifier => format!("{}", t.lexeme),
-            _ => panic!("unexpected token type"),
+            _ => format!("{}", t.lexeme),
         },
         Expr::Grouping(e) => {
             format!("({})", dump_ast(e))
@@ -32,8 +30,8 @@ mod tests {
 
     #[test]
     fn basic() {
-        use TokenType::*;
         use Expr;
+        use TokenType::*;
 
         let e = Expr::Unary(
             Token {

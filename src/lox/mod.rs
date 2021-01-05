@@ -1,9 +1,9 @@
-mod errors;
-mod scanner;
-mod parser;
-mod tokens;
 mod ast;
 mod astprinter;
+mod errors;
+mod parser;
+mod scanner;
+mod tokens;
 
 use scanner::Scanner;
 

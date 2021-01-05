@@ -185,9 +185,12 @@ impl<'a> Scanner<'a> {
         // close "
         self.advance();
 
-        self.add_token_with_literal(Str, Some(Literal::Str(
-            self.source[self.start + 1..self.current - 1].to_string()
-        )));
+        self.add_token_with_literal(
+            Str,
+            Some(Literal::Str(
+                self.source[self.start + 1..self.current - 1].to_string(),
+            )),
+        );
 
         Ok(())
     }
@@ -205,11 +208,14 @@ impl<'a> Scanner<'a> {
             }
         }
 
-        self.add_token_with_literal(Number, Some(Literal::Number(
-            self.source[self.start..self.current]
-                .parse::<f64>()
-                .unwrap(),
-        )));
+        self.add_token_with_literal(
+            Number,
+            Some(Literal::Number(
+                self.source[self.start..self.current]
+                    .parse::<f64>()
+                    .unwrap(),
+            )),
+        );
     }
 
     fn scan_identifier(self: &mut Self) {
@@ -267,10 +273,7 @@ mod tests {
             scan_types("(\"!===\")"),
             vec![LeftParen, Str, RightParen, Eof]
         );
-        assert_eq!(
-            scan_types("(123450.6789"),
-            vec![LeftParen, Number, Eof]
-        );
+        assert_eq!(scan_types("(123450.6789"), vec![LeftParen, Number, Eof]);
         assert_eq!(scan_types("else or lol"), vec![Else, Or, Identifier, Eof]);
     }
 

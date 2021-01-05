@@ -44,9 +44,7 @@ impl<'a> Parser<'a> {
         let mut exp = self.comparison()?;
 
         while let Some(op) = self.match_tokens(&[BangEqual, EqualEqual]) {
-            let right = self.comparison()?;
-
-            exp = Expr::Binary(Box::new(exp), op, Box::new(right));
+            exp = Expr::Binary(Box::new(exp), op, Box::new(self.comparison()?));
         }
 
         return Ok(exp);
@@ -54,11 +52,8 @@ impl<'a> Parser<'a> {
 
     fn comparison(&mut self) -> Result<Expr<'a>, CompileError> {
         let mut exp = self.term()?;
-
         while let Some(op) = self.match_tokens(&[Greater, GreaterEqual, Less, LessEqual]) {
-            let right = self.term()?;
-
-            exp = Expr::Binary(Box::new(exp), op, Box::new(right));
+            exp = Expr::Binary(Box::new(exp), op, Box::new(self.term()?));
         }
 
         return Ok(exp);
@@ -66,11 +61,8 @@ impl<'a> Parser<'a> {
 
     fn term(&mut self) -> Result<Expr<'a>, CompileError> {
         let mut exp = self.factor()?;
-
         while let Some(op) = self.match_tokens(&[Minus, Plus]) {
-            let right = self.factor()?;
-
-            exp = Expr::Binary(Box::new(exp), op, Box::new(right));
+            exp = Expr::Binary(Box::new(exp), op, Box::new(self.factor()?));
         }
 
         return Ok(exp);
@@ -78,11 +70,8 @@ impl<'a> Parser<'a> {
 
     fn factor(&mut self) -> Result<Expr<'a>, CompileError> {
         let mut exp = self.unary()?;
-
         while let Some(op) = self.match_tokens(&[Slash, Star]) {
-            let right = self.unary()?;
-
-            exp = Expr::Binary(Box::new(exp), op, Box::new(right));
+            exp = Expr::Binary(Box::new(exp), op, Box::new(self.unary()?));
         }
 
         return Ok(exp);
@@ -90,25 +79,14 @@ impl<'a> Parser<'a> {
 
     fn unary(&mut self) -> Result<Expr<'a>, CompileError> {
         if let Some(op) = self.match_tokens(&[Bang, Minus]) {
-            let right = self.unary()?;
-
-            return Ok(Expr::Unary(op, Box::new(right)));
+            return Ok(Expr::Unary(op, Box::new(self.unary()?)));
         }
 
         self.primary()
     }
 
     fn primary(&mut self) -> Result<Expr<'a>, CompileError> {
-        if let Some(t) = self.match_tokens(&[False]) {
-            return Ok(Expr::Literal(t));
-        }
-        if let Some(t) = self.match_tokens(&[True]) {
-            return Ok(Expr::Literal(t));
-        }
-        if let Some(t) = self.match_tokens(&[Nil]) {
-            return Ok(Expr::Literal(t));
-        }
-        if let Some(t) = self.match_tokens(&[Number, Str]) {
+        if let Some(t) = self.match_tokens(&[False, True, Nil, Number, Str]) {
             return Ok(Expr::Literal(t));
         }
 
@@ -118,7 +96,6 @@ impl<'a> Parser<'a> {
             return Ok(Expr::Grouping(Box::new(e)));
         }
 
-        // ERROR!
         self.build_error(InvalidSyntax, "Uexpected expression")
     }
 
@@ -194,6 +171,7 @@ mod tests {
         let mut s = Scanner::new(expr);
         let tokens = s.scan_tokens().unwrap();
         let mut p = Parser::new(&tokens);
+        println!("tokens: {:?}", tokens);
         let stmts = p.parse();
         let s = &stmts.unwrap()[0];
         match s {
@@ -209,5 +187,6 @@ mod tests {
         test_valid_expr("1+(3*2+-10)");
         test_valid_expr("2123-23232/2");
         test_valid_expr("(-1)+(!5)");
+        test_valid_expr("false+true");
     }
 }
