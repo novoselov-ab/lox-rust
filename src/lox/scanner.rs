@@ -1,5 +1,6 @@
 use super::errors;
 use super::tokens::*;
+use super::value::*;
 use errors::CompileErrorType::*;
 use errors::{CompileError, CompileErrorType};
 use std::collections::HashMap;
@@ -187,7 +188,7 @@ impl<'a> Scanner<'a> {
 
         self.add_token_with_literal(
             Str,
-            Some(Literal::Str(
+            Some(Value::Str(
                 self.source[self.start + 1..self.current - 1].to_string(),
             )),
         );
@@ -210,7 +211,7 @@ impl<'a> Scanner<'a> {
 
         self.add_token_with_literal(
             Number,
-            Some(Literal::Number(
+            Some(Value::Number(
                 self.source[self.start..self.current]
                     .parse::<f64>()
                     .unwrap(),
@@ -237,7 +238,7 @@ impl<'a> Scanner<'a> {
         self.add_token_with_literal(ttype, None)
     }
 
-    fn add_token_with_literal(self: &mut Self, ttype: TokenType, literal: Option<Literal>) {
+    fn add_token_with_literal(self: &mut Self, ttype: TokenType, literal: Option<Value>) {
         self.tokens.push(Token {
             ttype: ttype,
             lexeme: &self.source[self.start..self.current],

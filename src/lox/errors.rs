@@ -5,6 +5,7 @@ pub enum CompileErrorType {
     UnexpectedChar(char),
     UnterminatedString,
     InvalidSyntax,
+    EvaluationFailed
 }
 
 #[derive(Debug, PartialEq)]
