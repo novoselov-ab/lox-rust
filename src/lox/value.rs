@@ -2,6 +2,8 @@ use std::fmt;
 use std::f64::{INFINITY, NEG_INFINITY};
 
 
+
+#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Value {
     Str(::std::string::String),
